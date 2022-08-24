@@ -1,0 +1,538 @@
+-------------------------------1--AND----------------------------------
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
+
+
+def sse(val):
+    return np.sum(np.square(np.subtract(np.mean(val), val)))
+
+
+
+weight_list = []
+error_list = []
+eta = 0.3
+
+input = np.array([[0, 0, 1, 1], [0, 1, 0, 1], [-1, -1, -1, -1]])
+target = np.array([[0, 0, 0, 1]])
+
+print(input.shape)
+
+#shape[0] means row
+#shape[1] means column
+W = np.random.rand(1, input.shape[0])
+
+print(W)
+
+#decission boundary
+dc_bx = np.array([-1, 0, 1, 2])
+dc_bd = []
+
+# init finish
+
+dc_by = []
+slop = -1 * W[0][0] / W[0][1]
+
+for i in dc_bx:
+    dc_by.append(slop * i + W[0][2] / W[0][1])
+dc_bd.append(dc_by)
+
+
+epochs = 10000
+print(f"Epochs \t\t error")
+for i in range(epochs + 1):
+    y_k = np.dot(W, input)
+    y = sigmoid(y_k)
+    error = target - y
+    # f_d = 0.5 * (error * (1 - np.square(y)))
+    f_d = error
+    delta = np.dot(f_d, np.transpose(input))
+    W = W + eta * delta
+   
+    weight_list.append(W[0])
+    error_list.append(sse(error[0] / 4))
+    if i != 0 and i % 1000 == 0:
+        print(f"{i} \t\t {error_list[i]}")
+        slop = -1 * (weight_list[i][0] / weight_list[i][1])
+        dc_by = []
+        for x in dc_bx:
+            temp = weight_list[i][2]
+            dc_by.append(slop * x + weight_list[i][2] / weight_list[i][1])
+        dc_bd.append(dc_by)
+
+print("Input")
+print(input)
+print("Output")
+print(target)
+print("Error")
+print(error)
+
+# print((dc_bx,dc_bd[i]) for i in range(5))
+fig, ax = plt.subplots()
+ax.plot([0, 0, 1], [0, 1, 0], 'bo')
+ax.plot(1, 1, 'r+')
+for i, x in enumerate(dc_bd):
+    ax.plot(dc_bx, dc_bd[i], label=f"{i}th")
+ax.set(xlabel='x-label', ylabel='y-label')
+ax.legend()
+fig.suptitle("Decision Boundary")
+# ax.axis([-0.25, 1.5, -0.25, 1.5])
+
+fig, ax = plt.subplots()
+fig.suptitle("Error convergence curve")
+ax.plot([i for i in range(epochs + 1)], error_list)
+
+plt.show()
+
+-------------------------------------2--OR----------------------------------
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
+
+
+def sse(val):
+    return np.sum(np.square(np.subtract(np.mean(val), val)))
+
+
+dc_bx = np.array([-1, 0, 1, 2])
+dc_bd = []
+weight_list = []
+error_list = []
+eta = 0.3
+input = np.array([[0, 0, 1, 1], [0, 1, 0, 1], [-1, -1, -1, -1]])
+target = np.array([[0, 1, 1, 1]])
+print(input.shape[1])
+W = np.random.rand(1, input.shape[0])
+# W = np.array([[0.004501292851472, -0.002688614864257, 0.001068425835418]])
+print("Initial W",W)
+# W= np.array([[0.0045,-0.0027,0.0011]])
+# init finish
+slop = -1 * W[0][0] / W[0][1]
+dc_by = []
+for i in dc_bx:
+    dc_by.append(slop * i + W[0][2] / W[0][1])
+dc_bd.append(dc_by)
+
+print(dc_bd)
+epochs = 100000
+print(f"Epochs \t\t error")
+for i in range(epochs + 1):
+    y_k = np.dot(W, input)
+    y = sigmoid(y_k)
+    error = target - y
+    # f_d = 0.5 * (error * (1 - np.square(y)))
+    f_d = error
+    delta = np.dot(f_d, np.transpose(input))
+    W = W + eta * delta
+    weight_list.append(W[0])
+    error_list.append(sse(error[0] / 4))
+    if i != 0 and i % 10000 == 0:
+        print(f"{i} \t\t {error_list[i]}")
+        slop = -1 * (weight_list[i][0] / weight_list[i][1])
+        dc_by = []
+        for x in dc_bx:
+            temp = weight_list[i][2]
+            dc_by.append(slop * x + weight_list[i][2] / weight_list[i][1])
+        dc_bd.append(dc_by)
+
+print("Input")
+print(input)
+print("Output")
+print(target)
+print("Error")
+print(error)
+print("Result W", W)
+# print((dc_bx,dc_bd[i]) for i in range(5))
+fig, ax = plt.subplots()
+ax.plot(0, 0, 'bo')
+ax.plot([0, 1, 1], [1, 0, 1],'r+')
+for i, x in enumerate(dc_bd):
+    ax.plot(dc_bx, dc_bd[i], label=f"{i}th")
+ax.set(xlabel='x-label', ylabel='y-label')
+ax.legend()
+fig.suptitle("Decision Boundary")
+# ax.axis([-0.25, 1.5, -0.25, 1.5])
+
+fig, ax = plt.subplots()
+fig.suptitle("Error convergence curve")
+ax.plot([i for i in range(epochs + 1)], error_list)
+
+plt.show()
+
+
+---------------------------------------3---BATCH-----------------------
+
+import numpy as np
+
+
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
+
+
+X = np.array([[0, 0, 1],
+              [0, 1, 1],
+              [1, 0, 1],
+              [1, 1, 1]])
+
+D = np.array([[0, 0, 1, 1]])
+
+W = np.random.rand(1, 3)
+ALPHA = 0.9
+dWsum = np.zeros((3, 1))
+for i in range(100):
+    for j in range(D.shape[1]):
+        x = np.reshape(X[j], (3, 1))
+       
+        d = D[:, j]
+
+        v = np.dot(W, x)
+        y = sigmoid(v)
+        e = d - y
+        delta = y * (1 - y) * e
+        dW = ALPHA * delta * x
+        dWsum = dWsum + dW
+
+    dWavg = np.divide(dWsum, 4)
+    W = W + np.transpose(dWavg)
+  
+
+for i in range(D.shape[1]):
+    x = np.reshape(X[i], (3, 1))
+    v = np.dot(W, x)
+    y = sigmoid(v)
+    
+    
+    print(np.round(y))
+----------------------------------4---SGD-------------
+
+import numpy as np
+
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
+
+
+X = np.array([[0, 0, 1], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
+D = np.array([[0], [0], [1], [1]])
+W = 2*np.random.rand(1, 3)-1
+ALPHA = 0.9 
+
+#trainning
+for i in range(100):
+    for j in range(D.shape[0]):
+        x = np.reshape(X[j], (3, 1))
+        d = D[j, :]
+        v = np.dot(W, x)
+        y = sigmoid(v)
+        e = d - y
+        delta = y * (1 - y) * e
+        dW = ALPHA * delta * x
+        W = W + np.transpose(dW)
+
+for i in range(D.shape[0]):
+    x = np.reshape(X[i], (3, 1))
+    v = np.dot(W, x)
+    y = sigmoid(v)
+    print(np.round(y))
+
+
+----------------------------5----XOR----------------------------
+
+import numpy as np
+
+
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
+
+
+X = np.array([[0, 0, 1],
+              [0, 1, 1],
+              [1, 0, 1],
+              [1, 1, 1]])
+              
+D = np.array([[0, 1, 1, 0]])
+W1 = np.random.rand(4, 3)
+W2 = np.random.rand(1, 4)
+ALPHA = 0.9
+
+for i in range(10000):
+    for j in range(D.shape[1]):
+        x = np.reshape(X[j], (3, 1))
+        d = D[0, j]
+        v1 = np.dot(W1, x)
+        y1 = sigmoid(v1)
+        v = np.dot(W2, y1)
+        y = sigmoid(v)
+        e = d - y
+        delta = y * (1 - y) * e
+        e1 = np.dot(W2.transpose(), delta)
+        delta1 = y1 * (1 - y1) * e1
+        dW1 = ALPHA * np.dot(delta1, x.transpose())
+        W1 = W1 + dW1
+        dW2 = ALPHA * np.dot(delta, np.transpose(y1))
+        W2 = W2 + dW2
+
+
+for i in range(D.shape[1]):
+    x = np.reshape(X[i], (3, 1))
+    v1 = np.dot(W1, x)
+    y1 = sigmoid(v1)
+    v = np.dot(W2, y1)
+    y = sigmoid(v)
+    print(np.round(y))
+
+--------------------------6------------------------------
+---------------------#question er 2 nmbr ta---------------
+
+import numpy as np
+
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
+
+
+def softmax(x):
+    return np.exp(x) / np.sum(np.exp(x))
+
+
+one = np.array([[0, 1, 1, 0, 0],
+                [0, 0, 1, 0, 0],
+                [0, 0, 1, 0, 0],
+                [0, 0, 1, 0, 0],
+                [0, 1, 1, 1, 0]])
+two = np.array([[1, 1, 1, 1, 0],
+                [0, 0, 0, 0, 1],
+                [0, 1, 1, 1, 0],
+                [1, 0, 0, 0, 0],
+                [1, 1, 1, 1, 1]
+                ])
+three = np.array([[1, 1, 1, 1, 0],
+                  [0, 0, 0, 0, 1],
+                  [0, 1, 1, 1, 0],
+                  [0, 0, 0, 0, 1],
+                  [1, 1, 1, 1, 0]])
+four = np.array([[ 0, 0, 0, 1, 0],
+                  [0, 0, 1, 1, 0],
+                  [0, 1, 0, 1, 0],
+                  [1, 1, 1, 1, 1],
+                  [0, 0, 0, 1, 0]])
+
+              
+X = np.array([one, two, three,four])
+D = np.array([[1, 0, 0, 0, 0],
+              [0, 1, 0, 0, 0],
+              [0, 0, 1, 0, 0],
+              [0, 0, 0, 1, 0],
+              ])
+#assert X.shape[0] == D.shape[0], "Your are Fucked up!!"
+
+W1 = np.random.rand(50, 25)
+W2 = np.random.rand(5, 50)
+ALPHA = 0.9
+epchos = 100
+# print(D)
+for i in range(epchos+1):
+    for j, val in enumerate(D):
+     
+        x = np.reshape(X[j], (25, 1))
+       
+        d = np.reshape(val, (5, 1))
+        v1 = np.dot(W1, x)
+        y1 = sigmoid(v1)
+        v = np.dot(W2, y1)
+        y = softmax(v)
+        e = d - y
+        delta = e
+        e1 = np.dot(np.transpose(W2), delta)
+        delta1 = y1 * (1 - y1) * e1
+        dW1 = ALPHA * delta1 * np.transpose(x)
+        W1 = W1 + dW1
+        dW2 = ALPHA * delta * np.transpose(y1)
+        W2 = W2 + dW2
+
+# prediction Stage
+
+for j, val in enumerate(D):
+    x = np.reshape(X[j], (25, 1))
+    v1 = np.dot(W1, x)
+    y1 = sigmoid(v1)
+    v = np.dot(W2, y1)
+    y = np.round(softmax(v)).transpose()[0]
+    print(y)
+    print()
+
+
+
+
+-----------------------------question er 10 nmbr ta----------------------
+
+import numpy as np
+
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
+
+
+def softmax(x):
+    return np.exp(x) / np.sum(np.exp(x))
+
+
+one = np.array([[0, 1, 1, 0, 0],
+                [0, 0, 1, 0, 0],
+                [0, 0, 1, 0, 0],
+                [0, 0, 1, 0, 0],
+                [0, 1, 1, 1, 0]])
+two = np.array([[1, 1, 1, 1, 0],
+                [0, 0, 0, 0, 1],
+                [0, 1, 1, 1, 0],
+                [1, 0, 0, 0, 0],
+                [1, 1, 1, 1, 1]
+                ])
+three = np.array([[1, 1, 1, 1, 0],
+                  [0, 0, 0, 0, 1],
+                  [0, 1, 1, 1, 0],
+                  [0, 0, 0, 0, 1],
+                  [1, 1, 1, 1, 0]])
+four = np.array([[ 0, 0, 0, 1, 0],
+                  [0, 0, 1, 1, 0],
+                  [0, 1, 0, 1, 0],
+                  [1, 1, 1, 1, 1],
+                  [0, 0, 0, 1, 0]])
+five = np.array([[ 1, 1, 1, 1, 1],
+                  [1, 0, 0, 0, 0],
+                  [1, 1, 1, 1, 0],
+                  [0, 0, 0, 0, 1],
+                  [1, 1, 1, 1, 0]])
+
+
+X = np.array([one, two, three,four,five])
+D = np.array([[1, 0, 0, 0, 0],
+              [0, 1, 0, 0, 0],
+              [0, 0, 1, 0, 0],
+              [0, 0, 0, 1, 0],
+              [0, 0, 0, 0, 1]
+              ])
+
+
+W1 = np.random.rand(50, 25)
+W2 = np.random.rand(5, 50)
+ALPHA = 0.9
+epchos = 100
+# print(D)
+for i in range(epchos+1):
+    for j, val in enumerate(D):
+     
+        x = np.reshape(X[j], (25, 1))
+       
+        d = np.reshape(val, (5, 1))
+        v1 = np.dot(W1, x)
+        y1 = sigmoid(v1)
+        v = np.dot(W2, y1)
+        y = softmax(v)
+        e = d - y
+        delta = e
+        e1 = np.dot(np.transpose(W2), delta)
+        delta1 = y1 * (1 - y1) * e1
+        dW1 = ALPHA * delta1 * np.transpose(x)
+        W1 = W1 + dW1
+        dW2 = ALPHA * delta * np.transpose(y1)
+        W2 = W2 + dW2
+
+# prediction Stage
+
+for j, val in enumerate(D):
+    x = np.reshape(X[j], (25, 1))
+    v1 = np.dot(W1, x)
+    y1 = sigmoid(v1)
+    v = np.dot(W2, y1)
+    y = np.round(softmax(v)).transpose()[0]
+    print(y)
+    print()
+
+
+
+
+------------------------------7----SGD vs batch------------------------
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+ALPHA=0.9;
+
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
+
+def DeltaSGD(W,X,D):
+    for j in range(D.shape[1]):
+        x = np.reshape(X[j], (3, 1))
+        d = D[:, j]
+        v = np.dot(W, x)
+        y = sigmoid(v)
+        e = d - y
+        delta = y * (1 - y) * e
+        dW = ALPHA * delta * x
+        W = W + np.transpose(dW)
+    return W
+
+def DeltaBatch(W,X,D):
+    dWsum = np.zeros((3, 1))
+    for j in range(D.shape[1]):
+        x = np.reshape(X[j], (3, 1))
+        d = D[:, j]
+        v = np.dot(W, x)
+        y = sigmoid(v)
+        e = d - y
+        delta = y * (1 - y) * e
+        dW = ALPHA * delta * x
+        dWsum = dWsum + dW
+    dWavg = np.divide(dWsum, 4)
+    W = W + np.transpose(dWavg)
+    return W
+
+
+
+X = np.array([[0, 0, 1], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
+
+D = np.array([[0, 0, 1, 1]])
+
+E1 = np.zeros((1000,1));
+E2 = np.zeros((1000,1));
+
+
+W1 = 2*np.random.rand(1, 3)-1
+W2 = W1
+
+epoch = 1000
+
+for j in range(epoch):
+    W1=DeltaSGD(W1,X,D);
+    W2=DeltaBatch(W2,X,D);
+    es1=0;
+    es2=0;
+    for i in range(D.shape[1]):
+           x = np.reshape(X[i], (3, 1))
+           d = D[:, i]
+           v1 = np.dot(W1, x)
+           y1= sigmoid(v1)
+           es1=es1+(d-y1)**2
+           v2 = np.dot(W2, x)
+           y2=sigmoid(v2);
+           es2=es2+(d-y2)**2;
+    E1[int(j)]=es1/4
+    E2[int(j)]=es2/4
+
+dbx =[i for i in range(epoch)]
+
+plt.plot(dbx,E1,'r')
+plt.plot(dbx,E2,'g')
+plt.xlabel('Epoch')
+plt.ylabel('average of Training error')
+plt.legend(['SGD', 'Batch'])
+plt.show()
+
+       
+
